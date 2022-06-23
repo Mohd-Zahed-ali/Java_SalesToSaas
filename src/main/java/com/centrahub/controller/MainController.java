@@ -46,11 +46,10 @@ public class MainController {
 		return 1;
 	}
 
-	//,RequestMethod.POST
-	
-	@RequestMapping(value="/Test", method= {RequestMethod.GET})
-	public CLBaseStatusDto Createnewgrid(@RequestParam String accessToken, @RequestParam String transId) {
-			return SalesToSC.Createnewgrid(accessToken, transId);	
+
+	@RequestMapping(value="/Test", method= {RequestMethod.GET,RequestMethod.POST})
+	public CLBaseStatusDto Createnewgrid(@RequestParam String transId) throws UnsupportedEncodingException {
+			return SalesToSC.Createnewgrid(transId);	
 	}
 	
 
