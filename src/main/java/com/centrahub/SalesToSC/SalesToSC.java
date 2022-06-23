@@ -156,7 +156,7 @@ public class SalesToSC {
 	        			
 	        			//now
 	        			Log.info("Posting the SC data");
-        				TotalsaleAmount=  toDob(SO_LineItem.getfBaseUserCost());
+        				TotalsaleAmount=  toDob(SO_LineItem.getfSaleLicensePrice());
         	        	TotalTaxAmount= toDob(SO_LineItem.getVATAmount())+toDob(SO_LineItem.getServiceTaxAmount())+toDob(SO_LineItem.getCSTAmount());
         				SC_PLineItem.setiProductIdName(SO_LineItem.getProductIdName());
         				SC_PLineItem.setiProductGroupIdName(P_records.getProductGroupName());
@@ -191,8 +191,8 @@ public class SalesToSC {
         				list1.add(SC_PLineItem);
         				Log.info("Lst1"+gson.toJson(list1));
 	        		//com.centrahub.SaasContract.dto.Record SC_PostDataJson = new  ;	
-	        		TotalsaleAmount=TotalsaleAmount+toDob(SO_records.getTotalSaleAmount());
-	        		TotalTaxAmount=TotalTaxAmount+toDob(SO_records.getTotalTaxAmount());
+	        		TotalsaleAmount=TotalsaleAmount+toDob(SC_records.getTotalSaleAmount());
+	        		TotalTaxAmount=TotalTaxAmount+toDob(SC_records.getTotalTaxAmount());
 	        		SC_PostDataJson.setTotalSaleAmount(String.valueOf(TotalsaleAmount));
 	        		SC_PostDataJson.setTotalTaxAmount(String.valueOf(TotalTaxAmount));
 	        		TotalNetAmount=TotalsaleAmount+TotalTaxAmount;
