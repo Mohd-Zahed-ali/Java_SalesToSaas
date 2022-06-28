@@ -1,6 +1,10 @@
 package com.centrahub.SalesToSC;
 import com.google.gson.*;
 import com.mashape.unirest.http.HttpResponse;
+import com.mysql.cj.protocol.Resultset;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime; 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+import java.sql.*;//this is for sql insert
+import java.util.Calendar;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 import com.centrahub.status.CLBaseStatusDto;
 import com.centrahub.CLConstants;
 import com.centrahub.Product.dto.Productdto;
@@ -22,6 +32,7 @@ import com.centrahub.SalesOrder.dto.Record;
 import com.centrahub.SalesOrder.dto.LineItem;
 
 import com.centrahub.SaasContract.dto.SaasContractdto;
+import com.centrahub.SCinsert.SCHinsert;
 //import com.centrahub.SaasContract.dto.LineItem;
 //import com.centrahub.SaasContract.dto.Record;
 
@@ -69,7 +80,8 @@ public class SalesToSC {
         	double TotalsaleAmount=0.00;
 	        double TotalNetAmount=0.00;
 	        int LicPer=0;
-	        
+	        String MasterId="";
+	        Resultset rs =null;
 	        
         	for (int i=0;i<SO_records.getLineItems().size();i++)
 	        {
@@ -232,8 +244,86 @@ public class SalesToSC {
     		                logout_result = clUtils.logout(accessToken);
     		                
     		                Log.info("Posted Successfully and Logged Out Status : "+logout_result);
+    		                MasterId=SC_records.getMasterId();
     		                list1.clear();
     		                
+    		                
+    		              Log.info("Working on Inserting SC history  for SC masterId: " + MasterId);
+    		               try {
+    		            	   // create a mysql database connection
+    		            	   String myUrl = clUtils.getValueFromPropFile("spring.datasource.url");
+    		            	   String Username = clUtils.getValueFromPropFile("spring.datasource.username");
+    		            	   String password = clUtils.getValueFromPropFile("spring.datasource.password");
+    		            	   Connection conn = DriverManager.getConnection(myUrl, Username, password);
+    		            	   Log.info("Database connected sucessfully : "+conn);
+    		            	   // the mysql insert statement
+    		            	  
+    		            	   
+    		            	   Log.info("MasterId : "+MasterId);
+    		            	   String query = " insert into nCore_SaaSContract_SaaS_History([iMasterId],[AdditionalExternalUser],[AdditionalLightUser],[AmountLocal],[BaseUser],[LicenseType],[LightUser],[NetAmountLocal],[NetAmountUSD],[Quantity],[ResellerPercentage],[SalePercentage],[StreamType],[Tax1],[Tax1Amount],[Tax2],[Tax2Amount],[Tax3],[Tax3Amount],[TaxAmountLocal],[TaxAmountUSD],[TaxCode],[TaxPercentage],[iProductId],[ProductDescription],[SaleLicensePrice],[StdLicensePriceLocal],[iProductGroupId],[NoofUsers],[fPerUserAmount],[fAdditionalUserCost],[fLightUsersCost],[iLightUserPercent],iCreatedDate,AdditionalUser)"
+    		            		        + " values (dbo.fCrm_IntToAPITransId(?,0), ?, ?, ?, ?, dbo.fCrm_IntToAPITransId(?,0), ?, ?, ?, ?, ?, ?, dbo.fCrm_IntToAPITransId(?,0), ?, ?, ?, ?, ?, ?, ?, ?, dbo.fCrm_IntToAPITransId(?,0), ?, dbo.fCrm_IntToAPITransId(?,0), ?, ?, ?, dbo.fCrm_IntToAPITransId(?,0), ?, ?, ?, ?, ?, dbo.fCore_DateTimeToInt(?), ?)";
+    		            	   
+    		            	// create a sql date object so we can use it in our INSERT statement
+    		            	      Calendar calendar = Calendar.getInstance();
+    		            	      java.sql.Date startDate = new java.sql.Date(calendar.getTime().getTime());
+    		            	      DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    		            	      LocalDateTime now = LocalDateTime.now();
+    		            	      Log.info("DateTime now : "+dtf.format(now));
+    		            	   Log.info("date is : "+startDate);
+    		            	   // create the mysql insert preparedstatement
+    		            	   PreparedStatement preparedStmt = conn.prepareStatement(query);
+    		            	      preparedStmt.setString(1, MasterId);//masterid
+    		            	      preparedStmt.setInt(2, toInt(SO_LineItem.getAdditionalExternalUser()));//AdditionalExternalUser
+    		            	      preparedStmt.setInt(3, toInt(SO_LineItem.getAdditionalLightUser()));//AdditionalLightUser
+    		            	      preparedStmt.setInt(4, toInt(SO_LineItem.getAmountLocal()));//AmountLocal
+    		            	      preparedStmt.setInt(5, toInt(SO_LineItem.getBaseUser()));//BaseUser
+    		            	      preparedStmt.setInt(6, toInt(SO_LineItem.getLicenseTypeId()));//[LicenseType]
+    		            	      preparedStmt.setInt(7, toInt(SO_LineItem.getLightUser()));//[LightUser]
+    		            	      preparedStmt.setInt(8, toInt(SO_LineItem.getNetAmountLocal()));//[NetAmountLocal]
+    		            	      preparedStmt.setInt(9, toInt(SO_LineItem.getNetAmountUSD()));//[NetAmountUSD]
+    		            	      preparedStmt.setInt(10,1);//[Quantity]
+    		            	      preparedStmt.setInt(11, toInt(SO_LineItem.getPReseller()));//[ResellerPercentage]
+    		            	      preparedStmt.setInt(12, toInt(SO_LineItem.getSale()));//[SalePercentage]
+    		            	      preparedStmt.setInt(13, toInt(SO_LineItem.getStreamTypeId()));//[StreamType]
+    		            	      preparedStmt.setInt(14, toInt(SO_LineItem.getVat()));//[Tax1]
+    		            	      preparedStmt.setInt(15, toInt(SO_LineItem.getVATAmount()));//[Tax1Amount]
+    		            	      preparedStmt.setInt(16, toInt(SO_LineItem.getServiceTax()));//[Tax2]
+    		            	      preparedStmt.setInt(17, toInt(SO_LineItem.getServiceTaxAmount()));//[Tax2Amount]
+    		            	      preparedStmt.setInt(18, toInt(SO_LineItem.getCst()));//[Tax3]
+    		            	      preparedStmt.setInt(19, toInt(SO_LineItem.getCSTAmount()));//[Tax3Amount]
+    		            	      preparedStmt.setDouble(20, TotalTaxAmount);//[TaxAmountLocal]
+    		            	      preparedStmt.setInt(21,0);//[TaxAmountUSD]
+    		            	      preparedStmt.setInt(22, toInt(SO_LineItem.getTaxCodeId()));//[TaxCode]
+    		            	      preparedStmt.setInt(23, toInt(SO_LineItem.getPTax()));//[TaxPercentage]
+    		            	      preparedStmt.setInt(24, toInt(SO_LineItem.getProductIdId()));//[iProductId]
+    		            	      preparedStmt.setString(25, SO_LineItem.getProdDescription());//[ProductDescription]
+    		            	      preparedStmt.setInt(26, toInt(SO_LineItem.getfSaleLicensePrice()));//[SaleLicensePrice]
+    		            	      preparedStmt.setInt(27, 0);//[StdLicensePriceLocal]
+    		            	      preparedStmt.setInt(28, toInt(P_records.getProductGroupId()));//[iProductGroupId]
+    		            	      preparedStmt.setInt(29, toInt(SO_LineItem.getBaseUser()));//[NoofUsers] net to work
+    		            	      preparedStmt.setInt(30, 0);//[fPerUserAmount]
+    		            	      preparedStmt.setInt(31, toInt(SO_LineItem.getfAUYearValue()));//[fAdditionalUserCost]
+    		            	      preparedStmt.setInt(32, toInt(SO_LineItem.getfLUYearValue()));//[fLightUsersCost]
+    		            	      preparedStmt.setInt(33, toInt(SO_LineItem.getfAUYearValue()));//[iLightUserPercent]
+    		            	      preparedStmt.setString(34, dtf.format(now));//iCreatedDate
+    		            	      preparedStmt.setInt(35, toInt(SO_LineItem.getAdditionalUser()));//AdditionalUser
+    		            	      Log.info(preparedStmt.toString());
+    		            	      Log.info("sql statement: "+preparedStmt);
+    		            	      Log.info("SQL Query is : "+ query);
+    		            	      
+    		            	      // execute the preparedstatement
+    		            	      preparedStmt.execute();
+    		            	      String executedQuery = preparedStmt.toString();
+    		            	      Log.info("Data Posted to dataBase successfully " + executedQuery);
+    		            	     
+    		            	      conn.close();
+
+    		               } 
+    		               catch (Exception e)
+    		               {
+    		                 System.err.println("Got an exception!");
+    		                 System.err.println(e.getMessage());
+    		               }
     		                
     		                
     		                

@@ -22,11 +22,23 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-			<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			</dependency>
-
+		<dependency>
+	    <groupId>com.microsoft.sqlserver</groupId>
+	    <artifactId>mssql-jdbc</artifactId>
+	    <scope>runtime</scope>
+		</dependency>
+		<dependency>
+	    <groupId>mysql</groupId>
+	    <artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-tomcat</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -46,8 +58,7 @@
 
 		<dependency>
 		    <groupId>com.google.code.gson</groupId>
-		    <artifactId>gson</artifactId>
-		    															 
+		    <artifactId>gson</artifactId>														 
 		</dependency>
 	</dependencies>
 		<pluginRepositories>
@@ -66,6 +77,42 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			 <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sql-maven-plugin</artifactId>
+            <version>1.5</version>
+            <dependencies>
+                <dependency>
+                   <groupId>org.postgresql</groupId>
+                   <artifactId>postgresql</artifactId>
+                   <version>9.4-1201-jdbc41</version>
+                   </dependency>
+                   
+            </dependencies>
+            <configuration>
+                <driver>org.postgresql.Driver</driver>
+                <url>jdbc:postgresql://localhost:5432/database</url>
+                <username>postgres</username>
+                <password>postgres</password>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>default-cli</id>
+                    <goals>
+                        <goal>execute</goal>
+                    </goals>
+                    <configuration>
+                        <delimiter>/</delimiter>
+                        <delimiterType>normal</delimiterType>
+                        <autocommit>true</autocommit>
+
+                         <srcFiles>
+                             <srcFile>my-needed-sql.sql</srcFile>
+                             </srcFiles>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
 		</plugins>
 	</build>
 
